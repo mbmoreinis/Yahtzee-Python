@@ -15,7 +15,7 @@ def roll_hand():
 # Rerolls up to specified 5 die in array dice 
 def reroll_hand():
     reroll = int(input("Reroll how many 0-5? "))
-    if (reroll > 0 & reroll < 6):
+    if (reroll > 0 and reroll < 6):
         for d in range(reroll):
             if (reroll != 5):
                 d = int(input(f"Reroll which {d+1} of {reroll} (1-5)? "))
