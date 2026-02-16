@@ -210,4 +210,10 @@ def play_game():
     print(f"Your final score is {total} with all hands played.")
     
 #main
-play_game()
+def main():
+    print("Welcome to memory Yahtzee! \nRemember which categories you've scored in as you play.\nThere is no scoresheet yet.");
+    print("Here is your first of 13 hands.")
+    input("Ready?")
+    play_game()
+    
+main()
