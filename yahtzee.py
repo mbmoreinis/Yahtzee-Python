@@ -12,13 +12,26 @@ def roll_hand():
         dice[d]=die
     print(*dice,sep=", ")
 
+def safe_input(prompt):
+    while True:
+        user_input = input(prompt)
+        try:
+            # Try to convert the input to an integer
+            value = int(user_input)
+            # If successful, break the loop and return the value
+            break
+        except ValueError:
+            # If a ValueError is caught (non-integer input), print an error message
+            print("Invalid input! Please enter a whole number. Try again.")
+    return value
+
 # Rerolls up to specified 5 die in array dice 
 def reroll_hand():
-    reroll = int(input("Reroll how many 0-5? "))
+    reroll = safe_input("Reroll how many 0-5? ")
     if (reroll > 0 and reroll < 6):
         for d in range(reroll):
             if (reroll != 5):
-                d = int(input(f"Reroll which {d+1} of {reroll} (1-5)? "))
+                d = safe_input(f"Reroll which {d+1} of {reroll} (1-5)? ")
             die = random.randint(1,6)
             dice[d-1]=die
         print(*dice,sep=", ")
