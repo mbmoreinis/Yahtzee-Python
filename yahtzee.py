@@ -1,28 +1,59 @@
-import random
+# from microbit import *
 dice = [0,0,0,0,0]
 lower = 0
 scores = ["quit","ones","twos","threes","fours","fives","sixes", "3 of a kind", "sm straight", "lg straight", "full house", "4 of a kind", "yahtzee", "chance"]
-scored = []
-total = 0;    
+scored = [0]
+total = 0;
+
+# Scroll Micro is needed because one cannot capture current displayed character,
+# so we need to break strings up into lists. First below is the microbits version.
+def scroll_micro(msg):
+    pressed = False;
+    slist = []
+    msgl = 0
+    for char in msg:
+        slist.append(char)
+        msgl += 1 
+    c = 0
+    while (c < msgl and pressed is False):
+        basic.show_string(slist[c])
+        if input.button_is_pressed(Button.A):
+            pressed = True
+            basic.clear_screen()
+            basic.show_string(slist[c])
+            return int(slist[c])
+            basic.pause(10)
+        basic.pause(100) # pause to prevent the loop from running too fast
+        c+= 1
+    return 1
 
 # Rolls 5 die into array dice
 def roll_hand():
+    msg = "H:"
     for d in range(5):
-        die = random.randint(1,6)
-        dice[d]=die
-    print(*dice,sep=", ")
+        die = randint(1, 6)
+        dice[d] = die
+        msg += die
+    basic.show_string(msg)
 
-# Rerolls up to specified 5 die in array dice 
+# Rerolls up to specified 5 die in array dice
 def reroll_hand():
-    reroll = int(input("Reroll how many 0-5? "))
-    if (reroll > 0):
+    reroll = int(scroll_micro("RR? 0.1.2.3.4.5...0.1.2.3.4.5"))
+    if (reroll == 5):
         for d in range(reroll):
-            if (reroll != 5):
-                d = int(input(f"Reroll which {d+1} of {reroll} (1-5)? "))
-            die = random.randint(1,6)
-            dice[d-1]=die
-        print(*dice,sep=", ")
-    return reroll
+            die = randint(1, 6)
+            dice[d] = die
+            msg = ", ".join(str(x) for x in dice)
+            basic.show_string(msg)
+    elif (reroll == 0):
+        basic.show_string("No rerolls")
+    else:
+        for d in range(reroll):
+            which = int(scroll_micro("RW? 1.2.3.4.5.6..1.2.3.4.5.6"))
+            die = randint(1, 6)
+            dice[which] = die
+        msg = ", ".join(str(x) for x in dice)
+        basic.show_string(msg)
 
 # Gets category to score hand by
 def get_score():
@@ -33,7 +64,7 @@ def get_score():
             categories += ", "
         else:
             categories += ".\n Score in which category? "
-    category = int(input(categories))
+    category = int(scroll_micro(categories))
     if (category == 0):
         return -2
     elif (in_scored(category)):
@@ -56,8 +87,9 @@ def addAll():
 
 def in_scored(category):
     for c in range (len(scored)):
-        if (scored[c]==category):
-            print("You already scored that.")
+        if (scored[c] == category):
+            msg = "You already scored that."
+            basic.show_string(msg)
             return True
     return False
 
@@ -137,46 +169,50 @@ def score_hand(h):
     if (toScore == -2):
         return False
     else:
-        match toScore:
-            case 1 | 2 | 3 | 4 | 5 | 6:
-                score = addUp(toScore)
-                lower+= score
-            case 7: # 3 of a kind
-                if (check_dupe(3)):
-                    score = addAll()
-            case 8: # sm straight
-                if (sm_straight()):
-                    score = 30
-            case 9:  # lg straight
-                if (lg_straight()):
-                    score = 40
-            case 10: # full house
-                if (check_full()):
-                    score = 25
-            case 11:  # 4 of a kind
-                if (check_dupe(4)):
-                    score = addAll()
-            case 12:  # yahtzee
-                if (check_yahtzee()):
-                    score = 50
-            case 13:  # chance
+        if toScore > 0 and toScore < 7:
+            score = addUp(toScore)
+            lower+= score
+        elif toScore == 7:
+            if (check_dupe(3)):
                 score = addAll()
-            case _: # bad entry
-                score = -1
+        elif toScore == 8:
+            if (sm_straight()):
+                score = 30
+        elif toScore == 9:
+            if (lg_straight()):
+                score = 40
+        elif toScore == 10:
+            if (check_full()):
+                score = 25
+        elif toScore == 11:
+            if (check_dupe(4)):
+                score = addAll()
+        elif toScore == 12:
+            if (check_yahtzee()):
+                score = 50
+        elif toScore == 13:
+            score = addAll()
+        else:
+            score = -1
         if (score == -1):
-            print("Invalid entry. You should have entered an integer 1-13.")
+            msg="Invalid entry. You should have entered an integer 1-13."
+            basic.show_string(msg)
             score_hand(h)
+            return False
         else:
             scored.append(toScore) # add current to scored categories
-            if (toScore != 12 and check_yahtzee()): 
-                print("You got a Yahtzee bonus! 100 points added!")
+            if (toScore != 12 and check_yahtzee()):
+                msg="You got a Yahtzee bonus! 100 points added!"
+                basic.show_string(msg)
                 total += 100
-            print(f"You scored {score} for {scores[toScore]}")
+            msg = "You scored " + str(score) + " for " + str(scores[toScore])
+            basic.show_string(msg)
             total += score
             if (h < 13):
-                print(f"Your total is {total} with {h} of 13 hands played.")
+                msg= "Your total is "+ str(total) + " with "+ str(h) + " of 13 hands played"
+                basic.show_string(msg)
             return True
-    
+
 def play_game():
     global total
     for h in range(len(scores)):
@@ -187,13 +223,14 @@ def play_game():
                 rr = reroll_hand()
             ok = score_hand(h)
             if (ok == False):
-                print("Breaking")
+                basic.show_string("Breaking")
                 break
     if (lower >= 63):
-        print(f"Your lower score was {lower} so you earned 35 extra points!")
+        msg="Your lower score was "+ str(lower) + "so you earned 35 extra points!"
+        basic.show_string(msg)
         total += 35
-    print(f"Your final score is {total} with all hands played.")
+    msg="Your final score is " + str(total) + " with all hands played."
+    basic.show_string(msg)
     
 #main
 play_game()
-
