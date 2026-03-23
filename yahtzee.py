@@ -4,6 +4,94 @@ lower = 0
 scores = ["quit","ones","twos","threes","fours","fives","sixes", "3 of a kind", "sm straight", "lg straight", "full house", "4 of a kind", "yahtzee", "chance"]
 scored = [0]
 total = 0;
+die = -1;
+roll_over = False
+
+# Create an array (list) containing the 6 die faces
+die_faces = [
+    images.create_image("""
+        . . . . .
+        . . . . .
+        . . . . .
+        . . . . .
+        . . . . .
+        """),
+    images.create_image("""
+        . . . . .
+        . . . . .
+        . . # . .
+        . . . . .
+        . . . . .
+        """),
+    images.create_image("""
+        # . . . .
+        . . . . .
+        . . . . .
+        . . . . .
+        . . . . #
+        """),
+    images.create_image("""
+        # . . . .
+        . . . . .
+        . . # . .
+        . . . . .
+        . . . . #
+        """),
+    images.create_image("""
+        # . . . #
+        . . . . .
+        . . . . .
+        . . . . .
+        # . . . #
+        """),
+    images.create_image("""
+        # . . . #
+        . . . . .
+        . . # . .
+        . . . . .
+        # . . . #
+        """),
+    images.create_image("""
+        # . . . #
+        . . . . .
+        # . . . #
+        . . . . .
+        # . . . #
+        """)
+]
+# Trigger the roll when the Micro:bit is shaken
+input.on_gesture(Gesture.SHAKE, on_gesture_shake)
+
+def on_gesture_shake():
+    global die
+    die = die + 1
+    if roll_over == False:
+        roll = randint(1, 6)
+        die_faces[roll].show_image(0)
+        roll_hand(die, roll)
+
+def roll_hand(die,roll):
+    global dice, die, roll_over
+    dice[die] = roll
+    if die == 5:
+        roll_over = True
+        msg = "H:"
+        for d in range(5):
+            msg += dice[d]
+        basic.show_string(msg)
+        reroll_hand()
+
+
+# Rolls 5 die into array dice
+# def roll_hand_old():
+#     msg = "H:"
+#     for d in range(5):
+#         die = randint(1, 6)
+#         dice[d] = die
+#         msg += die
+#     basic.show_string(msg)
+
+
 
 # Scroll Micro is needed because one cannot capture current displayed character,
 # so we need to break strings up into lists. First below is the microbits version.
@@ -13,7 +101,7 @@ def scroll_micro(msg):
     msgl = 0
     for char in msg:
         slist.append(char)
-        msgl += 1 
+        msgl += 1
     c = 0
     while (c < msgl and pressed is False):
         basic.show_string(slist[c])
@@ -26,15 +114,6 @@ def scroll_micro(msg):
         basic.pause(100) # pause to prevent the loop from running too fast
         c+= 1
     return 1
-
-# Rolls 5 die into array dice
-def roll_hand():
-    msg = "H:"
-    for d in range(5):
-        die = randint(1, 6)
-        dice[d] = die
-        msg += die
-    basic.show_string(msg)
 
 # Rerolls up to specified 5 die in array dice
 def reroll_hand():
@@ -217,7 +296,7 @@ def play_game():
     global total
     for h in range(len(scores)):
         if (h>0):
-            roll_hand()
+            roll_hand(0,0)
             rr = reroll_hand()
             if (rr > 0):
                 rr = reroll_hand()
@@ -233,4 +312,5 @@ def play_game():
     basic.show_string(msg)
     
 #main
-play_game()
+if input.button_is_pressed(Button.B):
+    play_game()
