@@ -4,7 +4,8 @@
 
 dice = [0,0,0,0,0]
 lower = 0
-scores = ["Q","1","2","3","4","5","6", "3K", "SS", "LS", "FH", "4K", "YZ", "CH"]
+reroll = 0
+scores = ["-","1","2","3","4","5","6", "3K", "SS", "LS", "FH", "4K", "YZ", "CH"]
 scored = [0]
 total = 0;
 die = -1;
@@ -82,7 +83,7 @@ def try_roll():
     else:
         basic.show_string("A|B")
 
-# Add roll to hand until 5 rolled
+# Add roll to hand until 5 are rolled
 def roll_hand(die,roll):
     global dice, die, roll_over, rerolls, hands
     dice[die] = roll
@@ -93,6 +94,7 @@ def roll_hand(die,roll):
             # Reroll hand with B button if there are rerolls
             input.on_button_pressed(Button.B,reroll_hand)
         else:
+            # Score hand if there are no rerolls left
             input.on_button_pressed(Button.B,score_hand)
 
 def show_hand():
@@ -126,33 +128,31 @@ def scroll_micro(msg):
 
 # Rerolls up to specified 5 die in array dice
 def reroll_hand():
-    global roll_over, rerolls
-    rerolls = rerolls - 1
+    global roll_over,reroll,rerolls
     reroll = int(scroll_micro("RR?012345012345"))
-    if (reroll == 5):
-        roll_over = False      
+    if (reroll == 5 and rerolls > 0):
+        roll_over = False
+        rerolls = rerolls - 1
         basic.show_string("R5")
     elif (reroll == 0):
         roll_over = True
         basic.show_string("-")
-        input.on_button_pressed(Button.B,score_hand)    
+        input.on_button_pressed(Button.B,score_hand)
     else:
         for d in range(reroll):
-            which = int(scroll_micro("RW?1234512345"))
+            which = int(scroll_micro("RW?123456123456"))
             die = randint(1, 6)
             dice[which] = die
+        rerolls = rerolls - 1
         show_hand()
 
 # Gets category to score hand by
 def get_score():
-    categories = "Score:"
+    categories = "Cat:"
     for s in range(1,len(scores),1):
-        categories += str(s)+":"+scores[s]
-        if (s < len(scores)-1):
-            categories += ", "
-        else:
-            categories += ". W? "
-    category = int(scroll_micro(categories))
+        categories += scores[s]
+    categories += ". W? "
+    category = scroll_micro(categories)
     if (category == 0):
         return -2
     elif (in_scored(category)):
@@ -311,7 +311,7 @@ def play_game():
     dice = [0,0,0,0,0]
     roll_over = False
     basic.show_string("!")
-    # for h in range(len(scores)):            
+    # for h in range(len(scores)):
             # rr = reroll_hand()
             # if (rr > 0):
             #     rr = reroll_hand()
