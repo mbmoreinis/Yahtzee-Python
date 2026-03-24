@@ -1,11 +1,16 @@
-# from microbit import *
+# LOGIC: B changes mode (initial B starts)
+# LOGIC: A selects displayed character
+# LOGIC: Shake rolls dice
+
 dice = [0,0,0,0,0]
 lower = 0
-scores = ["quit","ones","twos","threes","fours","fives","sixes", "3 of a kind", "sm straight", "lg straight", "full house", "4 of a kind", "yahtzee", "chance"]
+scores = ["Q","1","2","3","4","5","6", "3K", "SS", "LS", "FH", "4K", "YZ", "CH"]
 scored = [0]
 total = 0;
 die = -1;
-roll_over = False
+rerolls = 2
+roll_over = True
+hands = 13
 
 # Create an array (list) containing the 6 die faces
 die_faces = [
@@ -59,53 +64,57 @@ die_faces = [
         # . . . #
         """)
 ]
-# Trigger the roll when the Micro:bit is shaken
-input.on_gesture(Gesture.SHAKE, on_gesture_shake)
 
-def on_gesture_shake():
-    global die
+# Trigger the roll when the Micro:bit is shaken
+input.on_gesture(Gesture.SHAKE, try_roll)
+
+# First B: Trigger start of game, enable rolls
+input.on_button_pressed(Button.B,play_game)
+
+# Attempt to roll a die (roll_over = False)
+def try_roll():
+    global die, roll_over
     die = die + 1
     if roll_over == False:
         roll = randint(1, 6)
         die_faces[roll].show_image(0)
         roll_hand(die, roll)
+    else:
+        basic.show_string("A|B")
 
+# Add roll to hand until 5 rolled
 def roll_hand(die,roll):
-    global dice, die, roll_over
+    global dice, die, roll_over, rerolls, hands
     dice[die] = roll
     if die == 5:
         roll_over = True
-        msg = "H:"
-        for d in range(5):
-            msg += dice[d]
-        basic.show_string(msg)
-        reroll_hand()
+        show_hand()
+        if rerolls > 0:
+            # Reroll hand with B button if there are rerolls
+            input.on_button_pressed(Button.B,reroll_hand)
+        else:
+            input.on_button_pressed(Button.B,score_hand)
 
-
-# Rolls 5 die into array dice
-# def roll_hand_old():
-#     msg = "H:"
-#     for d in range(5):
-#         die = randint(1, 6)
-#         dice[d] = die
-#         msg += die
-#     basic.show_string(msg)
-
-
+def show_hand():
+    msg = "H:"
+    for d in range(1,6):
+        msg += dice[d]
+    basic.show_string(msg)
 
 # Scroll Micro is needed because one cannot capture current displayed character,
 # so we need to break strings up into lists. First below is the microbits version.
 def scroll_micro(msg):
     pressed = False;
-    slist = []
-    msgl = 0
+    slist = [] #string list from msg
+    msgl = 0 # message length
     for char in msg:
         slist.append(char)
         msgl += 1
-    c = 0
+    c = 0 # current character in string list
     while (c < msgl and pressed is False):
         basic.show_string(slist[c])
         if input.button_is_pressed(Button.A):
+            music.play(music.tone_playable(Note.C, music.beat(BeatFraction.WHOLE)), music.PlaybackMode.UNTIL_DONE)
             pressed = True
             basic.clear_screen()
             basic.show_string(slist[c])
@@ -117,32 +126,32 @@ def scroll_micro(msg):
 
 # Rerolls up to specified 5 die in array dice
 def reroll_hand():
-    reroll = int(scroll_micro("RR? 0.1.2.3.4.5...0.1.2.3.4.5"))
+    global roll_over, rerolls
+    rerolls = rerolls - 1
+    reroll = int(scroll_micro("RR?012345012345"))
     if (reroll == 5):
-        for d in range(reroll):
-            die = randint(1, 6)
-            dice[d] = die
-            msg = ", ".join(str(x) for x in dice)
-            basic.show_string(msg)
+        roll_over = False      
+        basic.show_string("R5")
     elif (reroll == 0):
-        basic.show_string("No rerolls")
+        roll_over = True
+        basic.show_string("-")
+        input.on_button_pressed(Button.B,score_hand)    
     else:
         for d in range(reroll):
-            which = int(scroll_micro("RW? 1.2.3.4.5.6..1.2.3.4.5.6"))
+            which = int(scroll_micro("RW?1234512345"))
             die = randint(1, 6)
             dice[which] = die
-        msg = ", ".join(str(x) for x in dice)
-        basic.show_string(msg)
+        show_hand()
 
 # Gets category to score hand by
 def get_score():
-    categories = "Score categories are: \n"
+    categories = "Score:"
     for s in range(1,len(scores),1):
         categories += str(s)+":"+scores[s]
         if (s < len(scores)-1):
             categories += ", "
         else:
-            categories += ".\n Score in which category? "
+            categories += ". W? "
     category = int(scroll_micro(categories))
     if (category == 0):
         return -2
@@ -239,8 +248,10 @@ def lg_straight():
 def sm_straight():
     return count_neighbors(4)
         
-def score_hand(h):
-    global total, lower
+def score_hand():
+    global total, lower, hands, rerolls
+    rerolls = 2
+    h = hands
     score = 0
     toScore = get_score()
     if (toScore == -1):
@@ -276,7 +287,7 @@ def score_hand(h):
         if (score == -1):
             msg="Invalid entry. You should have entered an integer 1-13."
             basic.show_string(msg)
-            score_hand(h)
+            score_hand()
             return False
         else:
             scored.append(toScore) # add current to scored categories
@@ -290,27 +301,28 @@ def score_hand(h):
             if (h < 13):
                 msg= "Your total is "+ str(total) + " with "+ str(h) + " of 13 hands played"
                 basic.show_string(msg)
+            hands = hands - 1
             return True
 
 def play_game():
-    global total
-    for h in range(len(scores)):
-        if (h>0):
-            roll_hand(0,0)
-            rr = reroll_hand()
-            if (rr > 0):
-                rr = reroll_hand()
-            ok = score_hand(h)
-            if (ok == False):
-                basic.show_string("Breaking")
-                break
-    if (lower >= 63):
-        msg="Your lower score was "+ str(lower) + "so you earned 35 extra points!"
-        basic.show_string(msg)
-        total += 35
-    msg="Your final score is " + str(total) + " with all hands played."
-    basic.show_string(msg)
+    music.play(music.tone_playable(Note.C, music.beat(BeatFraction.WHOLE)), music.PlaybackMode.UNTIL_DONE)
+    global total, die, dice, roll_over
+    die = 0
+    dice = [0,0,0,0,0]
+    roll_over = False
+    basic.show_string("!")
+    # for h in range(len(scores)):            
+            # rr = reroll_hand()
+            # if (rr > 0):
+            #     rr = reroll_hand()
+            # ok = score_hand(h)
+            # if (ok == False):
+            #     basic.show_string("Breaking")
+            #     break
+    # if (lower >= 63):
+    #     msg="Your lower score was "+ str(lower) + "so you earned 35 extra points!"
+    #     basic.show_string(msg)
+    #     total += 35
+    # msg="Your final score is " + str(total) + " with all hands played."
+    # basic.show_string(msg)
     
-#main
-if input.button_is_pressed(Button.B):
-    play_game()
