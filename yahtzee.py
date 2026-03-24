@@ -7,8 +7,8 @@ lower = 0
 reroll = 0
 scores = ["0","1","2","3","4","5","6","3K","SS=","LS","FH","4K","YZ","CH"]
 scored = [0]
-total = 0;
-die = -1;
+total = 0
+die = -1
 rerolls = 2
 roll_over = True
 hands = 13
@@ -106,7 +106,7 @@ def show_hand():
 # Scroll Micro is needed because one cannot capture current displayed character,
 # so we need to break strings up into lists. First below is the microbits version.
 def scroll_micro(msg):
-    pressed = False;
+    pressed = False
     slist = [] #string list from msg
     msgl = 0 # message length
     for char in msg:
@@ -130,7 +130,7 @@ def scroll_micro(msg):
 # Scroll Micro String is needed because one cannot capture current displayed character,
 # so we need to break strings up into lists. First below is the microbits version.
 def scroll_micro_str(msg):
-    pressed = False;
+    pressed = False
     slist = [] #string list from msg
     msgl = 0 # message length
     for char in msg:
@@ -268,15 +268,15 @@ def check_dupe(count):
 def check_full():
     counts = [0,0,0,0,0,0,0]
     toCount = -1
-    house = 0;
+    house = 0
     for d in range(5):
         toCount = dice[d]
         counts[toCount] += 1
     for d in range (7):
         if (counts[d] == 3):
-            house +=2;
+            house +=2
         elif (counts[d] == 2):
-            house +=1;
+            house +=1
     if (house == 3):
         return True
     else:
