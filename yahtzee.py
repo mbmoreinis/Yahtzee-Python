@@ -5,7 +5,7 @@
 dice = [0,0,0,0,0]
 lower = 0
 reroll = 0
-scores = ["-","1","2","3","4","5","6","3K","SS=","LS","FH","4K","YZ","CH"]
+scores = ["0","1","2","3","4","5","6","3K","SS=","LS","FH","4K","YZ","CH"]
 scored = [0]
 total = 0;
 die = -1;
@@ -93,7 +93,7 @@ def roll_hand(die,roll):
         if rerolls > 0:
             # Reroll hand with B button if there are rerolls
             input.on_button_pressed(Button.B,reroll_hand)
-        else:
+        elif rerolls <= 0:
             # Score hand if there are no rerolls left
             input.on_button_pressed(Button.B,score_hand)
 
@@ -150,49 +150,82 @@ def scroll_micro_str(msg):
         c+= 1
     return "*"
 
+# Scroll Micro String is needed because one cannot capture current displayed character,
+# so we need to break strings up into lists. First below is the microbits version.
+def scroll_micro_list(slist):
+    pressed = False
+    msgl=0
+    for cat in slist:
+        msgl += 1
+    c = 0 # current element in string list
+    while (c < msgl and pressed is False):
+        basic.show_string(slist[c])
+        if input.button_is_pressed(Button.A):
+            music.play(music.tone_playable(Note.C, music.beat(BeatFraction.WHOLE)), music.PlaybackMode.UNTIL_DONE)
+            pressed = True
+            basic.clear_screen()
+            basic.show_string(slist[c])
+            return str(slist[c])
+            basic.pause(10)
+        basic.pause(100) # pause to prevent the loop from running too fast
+        c+= 1
+    return "*"
+
+
 # Rerolls up to specified 5 die in array dice
 def reroll_hand():
-    global roll_over,reroll,rerolls
-    reroll = int(scroll_micro("RR?012345012345"))
+    global roll_over, reroll, rerolls
+    reroll = int(scroll_micro("R?012345012345"))
     if (reroll == 5 and rerolls > 0):
         roll_over = False
         rerolls = rerolls - 1
-        basic.show_string("R5")
-    elif (reroll == 0):
+        basic.show_string("R:")
+    elif (reroll == 0 or roll_over == True):
         roll_over = True
+        rerolls = 0
         basic.show_string("-")
         input.on_button_pressed(Button.B,score_hand)
     else:
+        roll_over = False
         for d in range(reroll):
-            which = int(scroll_micro("RW?123456123456"))
+            which = int(scroll_micro("W?123456123456"))
             die = randint(1, 6)
             dice[which] = die
         rerolls = rerolls - 1
-        show_hand()
+    show_hand()
 
 # Gets category to score hand by
 def get_score():
-    categories = "SC:"
+    categories = "C:"
     for s in range(1,len(scores),1):
         categories += scores[s]
     basic.show_string(categories)
-    indices = "W?"
-    for s in range(1, len(scores),1):
-        indices += s 
-    category = scroll_micro(indices)
-    scorecat = str(scores[category])
-    okcat = scorecat + "? Y N"
+    hexvals = "W?123456789ABCD"
+    category = scroll_micro_str(hexvals)
+    numcat = 0
+    if category == "A":
+        numcat = 10
+    elif category == "B":
+        numcat = 11
+    elif category == "C":
+        numcat =12
+    elif category == "D":
+        numcat = 13
+    else:
+        numcat = int(category)
+    scorecat = str(scores[numcat])
+    okcat = scorecat + "OK?YN"
     ok = scroll_micro_str(str(okcat))
     if ok == "Y":
-        if (category == 0):
+        if (numcat == 0):
             return -2
-        elif (in_scored(category)):
+        elif (in_scored(numcat)):
             return -1
         else:
-            return category
+            return numcat
     else:
         get_score()
-        return -1
+        return numcat
         
 def addUp(value):
     score = 0
@@ -210,7 +243,7 @@ def addAll():
 def in_scored(category):
     for c in range (len(scored)):
         if (scored[c] == category):
-            msg = "You already scored that."
+            msg = "2X!"
             basic.show_string(msg)
             return True
     return False
@@ -319,7 +352,7 @@ def score_hand():
         else:
             score = -1
         if (score == -1):
-            msg="Invalid entry. You should have entered an integer 1-13."
+            msg="!1-13."
             basic.show_string(msg)
             score_hand()
             return False
