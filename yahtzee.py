@@ -5,10 +5,10 @@
 dice = [0,0,0,0,0]
 lower = 0
 reroll = 0
-scores = ["0","1","2","3","4","5","6","3K","SS=","LS","FH","4K","YZ","CH"]
+scores = ["-","1","2","3","4","5","6","3K","SS","LS","FH","4K","YZ","CH"]
 scored = [0]
-total = 0
-die = -1
+total = 0;
+die = -1;
 rerolls = 2
 roll_over = True
 hands = 13
@@ -85,7 +85,7 @@ def try_roll():
 
 # Add roll to hand until 5 are rolled
 def roll_hand(die,roll):
-    global dice, die, roll_over, rerolls, hands
+    global dice,die,roll_over,rerolls,hands
     dice[die] = roll
     if die == 5:
         roll_over = True
@@ -106,7 +106,7 @@ def show_hand():
 # Scroll Micro is needed because one cannot capture current displayed character,
 # so we need to break strings up into lists. First below is the microbits version.
 def scroll_micro(msg):
-    pressed = False
+    pressed = False;
     slist = [] #string list from msg
     msgl = 0 # message length
     for char in msg:
@@ -130,7 +130,7 @@ def scroll_micro(msg):
 # Scroll Micro String is needed because one cannot capture current displayed character,
 # so we need to break strings up into lists. First below is the microbits version.
 def scroll_micro_str(msg):
-    pressed = False
+    pressed = False;
     slist = [] #string list from msg
     msgl = 0 # message length
     for char in msg:
@@ -150,49 +150,25 @@ def scroll_micro_str(msg):
         c+= 1
     return "*"
 
-# Scroll Micro String is needed because one cannot capture current displayed character,
-# so we need to break strings up into lists. First below is the microbits version.
-def scroll_micro_list(slist):
-    pressed = False
-    msgl=0
-    for cat in slist:
-        msgl += 1
-    c = 0 # current element in string list
-    while (c < msgl and pressed is False):
-        basic.show_string(slist[c])
-        if input.button_is_pressed(Button.A):
-            music.play(music.tone_playable(Note.C, music.beat(BeatFraction.WHOLE)), music.PlaybackMode.UNTIL_DONE)
-            pressed = True
-            basic.clear_screen()
-            basic.show_string(slist[c])
-            return str(slist[c])
-            basic.pause(10)
-        basic.pause(100) # pause to prevent the loop from running too fast
-        c+= 1
-    return "*"
-
-
 # Rerolls up to specified 5 die in array dice
 def reroll_hand():
-    global roll_over, reroll, rerolls
-    reroll = int(scroll_micro("R?012345012345"))
+    global roll_over,reroll,rerolls
+    reroll = int(scroll_micro("RR?012345012345"))
     if (reroll == 5 and rerolls > 0):
         roll_over = False
         rerolls = rerolls - 1
-        basic.show_string("R:")
-    elif (reroll == 0 or roll_over == True):
+        basic.show_string("R5")
+    elif (reroll == 0):
         roll_over = True
-        rerolls = 0
-        basic.show_string("-")
+        basic.show_string("B>")
         input.on_button_pressed(Button.B,score_hand)
     else:
-        roll_over = False
         for d in range(reroll):
-            which = int(scroll_micro("W?123456123456"))
+            which = int(scroll_micro("RW?123456123456"))
             die = randint(1, 6)
             dice[which] = die
         rerolls = rerolls - 1
-    show_hand()
+        show_hand()
 
 # Gets category to score hand by
 def get_score():
