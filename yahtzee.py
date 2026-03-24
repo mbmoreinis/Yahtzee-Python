@@ -172,7 +172,7 @@ def reroll_hand():
 
 # Gets category to score hand by
 def get_score():
-    categories = "C:"
+    categories = "SC:"
     for s in range(1,len(scores),1):
         categories += scores[s]
     basic.show_string(categories)
@@ -180,19 +180,19 @@ def get_score():
     for s in range(1, len(scores),1):
         indices += s 
     category = scroll_micro(indices)
-    # okcat = category + ": " + scores[category]+"? Y N"
-    # ok = scroll_micro_str(okcat)
-    # if ok == "Y":
-    if (category == 0):
-        return -2
-    elif (in_scored(category)):
-        return -1
+    scorecat = str(scores[category])
+    okcat = scorecat + "? Y N"
+    ok = scroll_micro_str(str(okcat))
+    if ok == "Y":
+        if (category == 0):
+            return -2
+        elif (in_scored(category)):
+            return -1
+        else:
+            return category
     else:
-        return category
-    # else:
-    #     get_score()
-    #     return -1
-
+        get_score()
+        return -1
         
 def addUp(value):
     score = 0
