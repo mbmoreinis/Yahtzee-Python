@@ -12,6 +12,7 @@ die = -1;
 rerolls = 2
 roll_over = True
 hands = 13
+hand = 0
 
 # Create an array (list) containing the 6 die faces
 die_faces = [
@@ -170,6 +171,7 @@ def reroll_hand():
         rerolls = rerolls - 1
         show_hand()
 
+
 # Gets category to score hand by
 def get_score():
     categories = "C:"
@@ -300,9 +302,9 @@ def sm_straight():
     return count_neighbors(4)
         
 def score_hand():
-    global total, lower, hands, rerolls
+    global total, lower, hands, hand, rerolls
     rerolls = 2
-    h = hands
+    hand = hand+1
     score = 0
     toScore = get_score()
     if (toScore == -1):
@@ -346,13 +348,14 @@ def score_hand():
                 msg="You got a Yahtzee bonus! 100 points added!"
                 basic.show_string(msg)
                 total += 100
-            msg = "You scored " + str(score) + " for " + str(scores[toScore])
+            # msg= "TS= "+ str(total) + "@"+ str(13-h) + ":13"
+            msg = "US>" + str(score) + "@CAT" + str(scores[toScore])
             basic.show_string(msg)
             total += score
-            if (h < 13):
-                msg= "Your total is "+ str(total) + " with "+ str(h) + " of 13 hands played"
+            if (hand <= 13):
+                # msg= "TS= "+ str(total) + "@"+ str(13-h) + ":13"
+                msg= "TS="+ str(total) + "@"+ str(hand) + ":13"
                 basic.show_string(msg)
-            hands = hands - 1
             return True
 
 def play_game():
