@@ -5,7 +5,7 @@
 dice = [0,0,0,0,0]
 lower = 0
 reroll = 0
-scores = ["-","1","2","3","4","5","6", "3K", "SS", "LS", "FH", "4K", "YZ", "CH"]
+scores = ["-","1","2","3","4","5","6","3K","SS=","LS","FH","4K","YZ","CH"]
 scored = [0]
 total = 0;
 die = -1;
@@ -126,6 +126,30 @@ def scroll_micro(msg):
         c+= 1
     return 1
 
+
+# Scroll Micro String is needed because one cannot capture current displayed character,
+# so we need to break strings up into lists. First below is the microbits version.
+def scroll_micro_str(msg):
+    pressed = False;
+    slist = [] #string list from msg
+    msgl = 0 # message length
+    for char in msg:
+        slist.append(char)
+        msgl += 1
+    c = 0 # current character in string list
+    while (c < msgl and pressed is False):
+        basic.show_string(slist[c])
+        if input.button_is_pressed(Button.A):
+            music.play(music.tone_playable(Note.C, music.beat(BeatFraction.WHOLE)), music.PlaybackMode.UNTIL_DONE)
+            pressed = True
+            basic.clear_screen()
+            basic.show_string(slist[c])
+            return str(slist[c])
+            basic.pause(10)
+        basic.pause(100) # pause to prevent the loop from running too fast
+        c+= 1
+    return "*"
+
 # Rerolls up to specified 5 die in array dice
 def reroll_hand():
     global roll_over,reroll,rerolls
@@ -148,17 +172,27 @@ def reroll_hand():
 
 # Gets category to score hand by
 def get_score():
-    categories = "Cat:"
+    categories = "C:"
     for s in range(1,len(scores),1):
         categories += scores[s]
-    categories += ". W? "
-    category = scroll_micro(categories)
+    basic.show_string(categories)
+    indices = "W?"
+    for s in range(1, len(scores),1):
+        indices += s 
+    category = scroll_micro(indices)
+    # okcat = category + ": " + scores[category]+"? Y N"
+    # ok = scroll_micro_str(okcat)
+    # if ok == "Y":
     if (category == 0):
         return -2
     elif (in_scored(category)):
         return -1
     else:
         return category
+    # else:
+    #     get_score()
+    #     return -1
+
         
 def addUp(value):
     score = 0
