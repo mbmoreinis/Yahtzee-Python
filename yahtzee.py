@@ -263,6 +263,7 @@ def in_scored(category):
     return False
 
 def check_yahtzee():
+    basic.show_string("check_yahtzee?..")
     global dice
     match = dice[4]
     for d in range(4):
@@ -286,6 +287,7 @@ def check_dupe(count):
     return False
 
 def check_full():
+    basic.show_string("FH?..")
     global dice
     counts = [0,0,0,0,0,0,0]
     toCount = -1
