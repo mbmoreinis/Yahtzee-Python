@@ -97,7 +97,7 @@ def show_hand():
     msg = "H:"
     for d in range(1,6):
         msg += dice[d]
-    msg += " RL:" + rerolls
+    msg += " RR:" + rerolls
     if rerolls > 0:
         # Reroll hand with B button if there are rerolls
         input.on_button_pressed(Button.B,reroll_hand)
@@ -304,7 +304,7 @@ def sm_straight():
     return count_neighbors(4)
         
 def score_hand():
-    global total, lower, hands, hand, rerolls
+    global dice, total, lower, hands, hand, rerolls
     rerolls = 2
     hand = hand+1
     score = 0
@@ -354,12 +354,25 @@ def score_hand():
             basic.show_string(msg)
             msg = "    C:" + str(scores[toScore])
             total += score
-            if (hand <= 13):
-                # msg= "TS= "+ str(total) + "@"+ str(13-h) + ":13"
-                msg= "TS: "+ str(total)+ "  " 
+            msg= "TS: "+ str(total)+ "  " 
+            basic.show_string(msg)
+            msg = "H: "+ str(hand)
+            if hand == 13:
+                if (lower >= 63):
+                        msg="YLS= "+ str(lower) + "so +35!   "
+                        basic.show_string(msg)
+                        total += 35
+                msg="FS: " + str(total)
                 basic.show_string(msg)
-                msg = "H: "+ str(hand)
+                input.on_button_pressed(Button.B,end_game)
+                return False
             return True
+def end_game():
+    global total
+    basic.show_string("Total: "+total+ "... Game Over!")
+    input.on_button_pressed(Button.B,play_game)
+
+    return True
 
 def play_game():
     music.play(music.tone_playable(Note.C, music.beat(BeatFraction.WHOLE)), music.PlaybackMode.UNTIL_DONE)
@@ -367,19 +380,4 @@ def play_game():
     die = 0
     dice = [0,0,0,0,0]
     roll_over = False
-    basic.show_string("!")
-    # for h in range(len(scores)):
-            # rr = reroll_hand()
-            # if (rr > 0):
-            #     rr = reroll_hand()
-            # ok = score_hand(h)
-            # if (ok == False):
-            #     basic.show_string("Breaking")
-            #     break
-    # if (lower >= 63):
-    #     msg="Your lower score was "+ str(lower) + "so you earned 35 extra points!"
-    #     basic.show_string(msg)
-    #     total += 35
-    # msg="Your final score is " + str(total) + " with all hands played."
-    # basic.show_string(msg)
-    
+    basic.show_string("SH!")
