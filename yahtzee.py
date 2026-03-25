@@ -70,8 +70,8 @@ die_faces = [
     images.create_image("""
         . . . . .
         . . . . #
-        . . . # . 
-        # . # . . 
+        . . . # .
+        # . # . .
         . # . . .
         """),
     images.create_image("""
@@ -118,7 +118,6 @@ def show_hand():
     msg = "H:"
     for d in range(1,6):
         msg += dice[d]
-    msg += "R:" + rerolls
     if rerolls > 0:
         # Reroll hand with B button if there are rerolls
         input.on_button_pressed(Button.B,reroll_hand)
@@ -180,7 +179,7 @@ def reroll_hand():
     reroll = int(scroll_micro("RR? 012345 012345"))
     if (reroll == 5 and rerolls > 0):
         roll_over = False
-        rerolls = rerolls - 1 
+        rerolls = rerolls - 1
         basic.show_string("R5!")
     elif (reroll == 0):
         roll_over = True
@@ -216,7 +215,7 @@ def get_score():
     else:
         numcat = int(category)
     scorecat = str(scores[numcat])
-    msg = scorecat + " OK? YN YN"
+    msg = scorecat + "? YN YN"
     ok = scroll_micro_str(str(msg))
     if ok == "Y":
         if (numcat == 0):
@@ -237,7 +236,7 @@ def addUp(value):
             score += value
     if score > 0:
         die_faces[8].show_image(0)
-    else: 
+    else:
         die_faces[9].show_image(0)
     return score
 
@@ -264,7 +263,6 @@ def in_scored(category):
     return False
 
 def check_yahtzee():
-    basic.show_string("check_yahtzee?..")
     global dice
     match = dice[4]
     for d in range(4):
@@ -396,7 +394,7 @@ def score_hand():
             basic.show_string(msg)
             msg = "    C:" + str(scores[toScore])
             total += score
-            msg= "TS: "+ str(total)+ "  " 
+            msg= "TS: "+ str(total)+ "  "
             basic.show_string(msg)
             msg = "H: "+ str(hand)
             if hand == 13:
