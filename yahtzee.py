@@ -184,6 +184,7 @@ def reroll_hand():
         basic.show_string("R5!")
     elif (reroll == 0):
         roll_over = True
+        rerolls = 0
         basic.show_string("B!")
         input.on_button_pressed(Button.B,score_hand)
     else:
