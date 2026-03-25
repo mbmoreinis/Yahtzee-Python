@@ -199,7 +199,7 @@ def reroll_hand():
 def get_score():
     categories = "C:"
     for s in range(1,len(scores),1):
-        categories += scores[s]
+        categories += scores[s]+" "
     basic.show_string(categories)
     hexvals = "W? 123456789ABCD 123456789ABCD"
     category = scroll_micro_str(hexvals)
@@ -245,10 +245,6 @@ def addAll():
     score = 0
     for d in range(1, 6):
         score += dice[d]
-    if score > 0:
-        die_faces[8].show_image(0)
-    else:
-        die_faces[9].show_image(0)
     return score
 
 def in_scored(category):
@@ -257,9 +253,7 @@ def in_scored(category):
         if (scored[c] == category):
             msg = "2X!"
             basic.show_string(msg)
-            die_faces[8].show_image(0)
             return True
-    die_faces[9].show_image(0)
     return False
 
 def check_yahtzee():
@@ -267,7 +261,6 @@ def check_yahtzee():
     match = dice[4]
     for d in range(2, 6):
         if (dice[d] != match):
-            die_faces[9].show_image(0)
             return False
     die_faces[8].show_image(0)
     return True
@@ -286,7 +279,6 @@ def check_dupe(count):
     return False
 
 def check_full():
-    basic.show_string("FH?..")
     global dice
     counts = [0,0,0,0,0,0,0]
     toCount = -1
@@ -390,11 +382,11 @@ def score_hand():
                 msg="YZ!+100!!"
                 basic.show_string(msg)
                 total += 100
-            msg = "P: " + str(score)+ "  "
+            msg = "P:" + str(score)+ "  "
             basic.show_string(msg)
-            msg = "    C:" + str(scores[toScore])
+            msg = "C:" + str(scores[toScore])
             total += score
-            msg= "TS: "+ str(total)+ "  "
+            msg= " TS:"+ str(total)+ "  "
             basic.show_string(msg)
             msg = "H: "+ str(hand)
             if hand == 13:
@@ -406,7 +398,18 @@ def score_hand():
                 basic.show_string(msg)
                 input.on_button_pressed(Button.B,end_game)
                 return False
+            input.on_button_pressed(Button.B,shake_it)
             return True
+                            
+def shake_it():
+    global die, dice, roll_over
+    music.play(music.tone_playable(Note.C, music.beat(BeatFraction.WHOLE)), music.PlaybackMode.UNTIL_DONE)
+    basic.show_string("SH!")
+    roll_over = False
+    die = 0
+    dice = [0,0,0,0,0]
+    return True
+
 def end_game():
     global total
     basic.show_string("Total: "+total+ "... Game Over!")
