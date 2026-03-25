@@ -231,7 +231,7 @@ def get_score():
 def addUp(value):
     global dice
     score = 0
-    for d in range(5):
+    for d in range(1, 6):
         if (dice[d] == value):
             score += value
     if score > 0:
@@ -243,7 +243,7 @@ def addUp(value):
 def addAll():
     global dice
     score = 0
-    for d in range(5):
+    for d in range(1, 6):
         score += dice[d]
     if score > 0:
         die_faces[8].show_image(0)
@@ -265,7 +265,7 @@ def in_scored(category):
 def check_yahtzee():
     global dice
     match = dice[4]
-    for d in range(4):
+    for d in range(2, 6):
         if (dice[d] != match):
             die_faces[9].show_image(0)
             return False
@@ -276,7 +276,7 @@ def check_dupe(count):
     global dice
     counts = [0,0,0,0,0,0,0]
     toCount = -1
-    for d in range(5):
+    for d in range(1, 6):
         toCount = dice[d]
         counts[toCount] += 1
         if (counts[toCount] == count):
@@ -291,7 +291,7 @@ def check_full():
     counts = [0,0,0,0,0,0,0]
     toCount = -1
     house = 0
-    for d in range(5):
+    for d in range(1, 6):
         toCount = dice[d]
         counts[toCount] += 1
     for d in range (7):
@@ -310,7 +310,7 @@ def sort_dice():
     global dice
     n = 6
     swap = -1
-    for i in range (4):
+    for i in range(1, 6):
         minIndex = i
         for j in range (i+1,5,1):
             if (dice[j] < dice[minIndex]):
@@ -323,7 +323,7 @@ def count_neighbors(needed):
     global dice
     sort_dice()
     jumps = 0
-    for i in range (4):
+    for i in range(1, 6):
         gap = dice[i+1]-dice[i]
         if (gap != 1):
             jumps += 1
