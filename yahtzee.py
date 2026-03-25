@@ -2,12 +2,14 @@
 # LOGIC: A selects displayed character
 # LOGIC: Shake rolls dice
 
+# NOTE: Extra reroll granted
+
 dice = [0,0,0,0,0]
-lower = 0
-reroll = 0
 scores = ["-","1","2","3","4","5","6","3K","SS","LS","FH","4K","YZ","CH"]
 scored = [0]
 total = 0;
+lower = 0
+reroll = 0
 die = -1;
 rerolls = 2
 roll_over = True
@@ -81,8 +83,6 @@ def try_roll():
         roll = randint(1, 6)
         die_faces[roll].show_image(0)
         roll_hand(die, roll)
-    else:
-        basic.show_string("A|B")
 
 # Add roll to hand until 5 are rolled
 def roll_hand(die,roll):
@@ -91,17 +91,19 @@ def roll_hand(die,roll):
     if die == 5:
         roll_over = True
         show_hand()
-        if rerolls > 0:
-            # Reroll hand with B button if there are rerolls
-            input.on_button_pressed(Button.B,reroll_hand)
-        elif rerolls <= 0:
-            # Score hand if there are no rerolls left
-            input.on_button_pressed(Button.B,score_hand)
 
 def show_hand():
+    global dice, rerolls
     msg = "H:"
     for d in range(1,6):
         msg += dice[d]
+    msg += " RL:" + rerolls
+    if rerolls > 0:
+        # Reroll hand with B button if there are rerolls
+        input.on_button_pressed(Button.B,reroll_hand)
+    elif rerolls <= 0:
+        # Score hand if there are no rerolls left
+        input.on_button_pressed(Button.B,score_hand)
     basic.show_string(msg)
 
 # Scroll Micro is needed because one cannot capture current displayed character,
@@ -154,18 +156,18 @@ def scroll_micro_str(msg):
 # Rerolls up to specified 5 die in array dice
 def reroll_hand():
     global roll_over,reroll,rerolls
-    reroll = int(scroll_micro("RR?012345012345"))
+    reroll = int(scroll_micro("RR? 012345 012345"))
     if (reroll == 5 and rerolls > 0):
         roll_over = False
-        rerolls = rerolls - 1
-        basic.show_string("R5")
+        rerolls = rerolls - 1 
+        basic.show_string("R5!")
     elif (reroll == 0):
         roll_over = True
-        basic.show_string("B>")
+        basic.show_string("B!")
         input.on_button_pressed(Button.B,score_hand)
     else:
         for d in range(reroll):
-            which = int(scroll_micro("RW?123456123456"))
+            which = int(scroll_micro("RW? 12345 12345"))
             die = randint(1, 6)
             dice[which] = die
         rerolls = rerolls - 1
@@ -178,7 +180,7 @@ def get_score():
     for s in range(1,len(scores),1):
         categories += scores[s]
     basic.show_string(categories)
-    hexvals = "W?123456789ABCD"
+    hexvals = "W? 123456789ABCD 123456789ABCD"
     category = scroll_micro_str(hexvals)
     numcat = 0
     if category == "A":
@@ -192,7 +194,7 @@ def get_score():
     else:
         numcat = int(category)
     scorecat = str(scores[numcat])
-    okcat = scorecat + "OK?YN"
+    okcat = scorecat + "OK? YN YN"
     ok = scroll_micro_str(str(okcat))
     if ok == "Y":
         if (numcat == 0):
@@ -348,14 +350,15 @@ def score_hand():
                 msg="You got a Yahtzee bonus! 100 points added!"
                 basic.show_string(msg)
                 total += 100
-            # msg= "TS= "+ str(total) + "@"+ str(13-h) + ":13"
-            msg = "US>" + str(score) + "@CAT" + str(scores[toScore])
+            msg = "P: " + str(score)+ "  "
             basic.show_string(msg)
+            msg = "    C:" + str(scores[toScore])
             total += score
             if (hand <= 13):
                 # msg= "TS= "+ str(total) + "@"+ str(13-h) + ":13"
-                msg= "TS="+ str(total) + "@"+ str(hand) + ":13"
+                msg= "TS: "+ str(total)+ "  " 
                 basic.show_string(msg)
+                msg = "H: "+ str(hand)
             return True
 
 def play_game():
