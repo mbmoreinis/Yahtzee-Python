@@ -66,6 +66,27 @@ die_faces = [
         # . . . #
         . . . . .
         # . . . #
+        """),
+    images.create_image("""
+        . . . . .
+        . . . . #
+        . . . # . 
+        # . # . . 
+        . # . . .
+        """),
+    images.create_image("""
+        . . . . #
+        . . . # .
+        # . # . .
+        . # . . .
+        . . . . .
+        """),
+    images.create_image("""
+        # . . . #
+        . # . # .
+        . . # . .
+        . # . # .
+        # . . . #
         """)
 ]
 
@@ -97,7 +118,7 @@ def show_hand():
     msg = "H:"
     for d in range(1,6):
         msg += dice[d]
-    msg += " RR:" + rerolls
+    msg += "R:" + rerolls
     if rerolls > 0:
         # Reroll hand with B button if there are rerolls
         input.on_button_pressed(Button.B,reroll_hand)
@@ -194,8 +215,8 @@ def get_score():
     else:
         numcat = int(category)
     scorecat = str(scores[numcat])
-    okcat = scorecat + "OK? YN YN"
-    ok = scroll_micro_str(str(okcat))
+    msg = scorecat + " OK? YN YN"
+    ok = scroll_micro_str(str(msg))
     if ok == "Y":
         if (numcat == 0):
             return -2
@@ -213,6 +234,10 @@ def addUp(value):
     for d in range(5):
         if (dice[d] == value):
             score += value
+    if score > 0:
+        die_faces[8].show_image(0)
+    else: 
+        die_faces[9].show_image(0)
     return score
 
 def addAll():
@@ -220,6 +245,10 @@ def addAll():
     score = 0
     for d in range(5):
         score += dice[d]
+    if score > 0:
+        die_faces[8].show_image(0)
+    else:
+        die_faces[9].show_image(0)
     return score
 
 def in_scored(category):
@@ -228,7 +257,9 @@ def in_scored(category):
         if (scored[c] == category):
             msg = "2X!"
             basic.show_string(msg)
+            die_faces[8].show_image(0)
             return True
+    die_faces[9].show_image(0)
     return False
 
 def check_yahtzee():
@@ -236,7 +267,9 @@ def check_yahtzee():
     match = dice[4]
     for d in range(4):
         if (dice[d] != match):
+            die_faces[9].show_image(0)
             return False
+    die_faces[8].show_image(0)
     return True
 
 def check_dupe(count):
@@ -247,7 +280,9 @@ def check_dupe(count):
         toCount = dice[d]
         counts[toCount] += 1
         if (counts[toCount] == count):
+            die_faces[8].show_image(0)
             return True
+    die_faces[9].show_image(0)
     return False
 
 def check_full():
@@ -264,8 +299,10 @@ def check_full():
         elif (counts[d] == 2):
             house +=1
     if (house == 3):
+        die_faces[8].show_image(0)
         return True
     else:
+        die_faces[9].show_image(0)
         return False
 
 def sort_dice():
@@ -293,8 +330,10 @@ def count_neighbors(needed):
                 jumps = 5
     gap = 5-needed
     if (jumps > gap):
+        die_faces[9].show_image(0)
         return False
     else:
+        die_faces[8].show_image(0)
         return True
     
 def lg_straight():
@@ -347,7 +386,7 @@ def score_hand():
         else:
             scored.append(toScore) # add current to scored categories
             if (toScore != 12 and check_yahtzee()):
-                msg="You got a Yahtzee bonus! 100 points added!"
+                msg="YZ!+100!!"
                 basic.show_string(msg)
                 total += 100
             msg = "P: " + str(score)+ "  "
